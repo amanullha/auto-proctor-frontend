@@ -21,7 +21,7 @@ const AllQuestions = () => {
 
 
     const { isLoading, error, data: questions, refetch } = useQuery('repoData', () =>
-        fetch(`http://localhost:5000/get-all-questions?questionType=${questionType}`).then(res =>
+        fetch(`https://hidden-ocean-35645.herokuapp.com/get-all-questions?questionType=${questionType}`).then(res =>
             res.json()
         ))
 
@@ -43,7 +43,7 @@ const AllQuestions = () => {
             'Authorization': 'Bearer my-token',
             'My-Custom-Header': 'foobar'
         };
-        axios.delete(`http://localhost:5000/delete-question?deleteQuestionId=${_id}`, { headers })
+        axios.delete(`https://hidden-ocean-35645.herokuapp.com/delete-question?deleteQuestionId=${_id}`, { headers })
             .then((res) => {
 
                 console.log("delete response: ", res);

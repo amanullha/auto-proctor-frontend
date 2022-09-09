@@ -115,7 +115,7 @@ const NewTest = () => {
         };
 
 
-        axios.post('http://localhost:5000/add-question', question, { headers })
+        axios.post('https://hidden-ocean-35645.herokuapp.com/add-question', question, { headers })
             .then(response => {
                 console.log('response: ', response);
 

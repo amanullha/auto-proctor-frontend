@@ -8,7 +8,7 @@ const CreateTextQuestion = ({ question, setQuestion }) => {
         const q = question;
         q.title = e.target.value;
 
-        q.questionType = 'mcq';
+        q.questionType = 'textQuestion';
 
         setQuestion(q);
         // console.log(question);
