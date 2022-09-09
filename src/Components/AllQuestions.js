@@ -92,6 +92,7 @@ const AllQuestions = () => {
         )
     }
 
+    console.log(questions);
 
     return (
         <div className='bg-white w-full h-full py-10 '>
@@ -111,7 +112,7 @@ const AllQuestions = () => {
                         <select onChange={handleTypeChange} className='bg-transparent pl-2 pr-5 py-1 border-2 border-gray-200' name="questionType" id="cars">
                             <option selected value="all">All</option>
                             <option value="mcq">MCQ</option>
-                            <option value="shortText">Short Text</option>
+                            <option value="textQuestion">Short Text</option>
 
                         </select>
 
@@ -140,6 +141,7 @@ const AllQuestions = () => {
                                 <tr>
                                     <th></th>
                                     <th>Question Title</th>
+                                    <th>Point</th>
                                     <th>Question Type</th>
                                     <th>Action</th>
                                 </tr>
@@ -153,6 +155,7 @@ const AllQuestions = () => {
                                             <tr>
                                                 <th>{i + 1}</th>
                                                 <td>{q.title}</td>
+                                                <td>{q.point}</td>
                                                 <td>{q.questionType}</td>
                                                 <td >
                                                     <label
