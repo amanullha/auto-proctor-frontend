@@ -1,50 +1,129 @@
 import React, { useState } from 'react';
 import { FiSettings } from 'react-icons/fi'
 import { HiSaveAs } from 'react-icons/hi'
-import { CgMenuGridO } from 'react-icons/cg'
-import { AiOutlineQuestionCircle } from 'react-icons/ai'
-import CreateShortQuestion from './CreateShortQuestion';
-import CreateTextQuestion from './CreateTextQuestion';
+import { BsFileEarmarkPlus } from 'react-icons/bs'
+import { AiOutlineCloudUpload } from 'react-icons/ai'
+import NewQuestion from './NewQuestion';
+import Drag from './Drag';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+let questionId = 2;
+
 
 const NewTest = () => {
 
 
-    const navigate = useNavigate();
-
-    const [question, setQuestion] = useState({
-
+    const questionStructure = {
+        questionID: 1,
         title: '',
-        option1: '',
-        option2: '',
-        option3: '',
-        option4: '',
+        options: ["", ""],
         answer: [],
-        questionType: '',
+        questionType: "mcq",
         point: 1,
 
-    });
+    }
+    const [questions, setQuestions] = useState([{ ...questionStructure }]);
 
-    const setQuestionPoint = (e) => {
 
-        const q = question;
-        q.point = e.target.value;
-        setQuestion(q);
-        console.log(question);
+    const [dragItemIndex, setDragItemIndex] = useState();
+    const [dragOverItemIndex, setDragOverItemIndex] = useState();
+
+    const navigate = useNavigate();
+
+    // console.log(dragOverItemIndex);
+
+    const addQuestion = () => {
+
+        const newQ = { ...questionStructure };
+
+        newQ.questionID = questionId;
+        questionId = questionId + 1;
+
+        const updateQustions = [...questions, newQ];
+
+        setQuestions(updateQustions);
+
+    }
+
+    const deleteQuestion = (qId) => {
+
+
+        const updateQustions = questions.filter(q => q.questionID !== qId);
+
+        setQuestions(updateQustions);
+
     }
 
 
 
+    const addQuestionTitle = (event) => {
 
-    const [questionType, setQuestionType] = useState('mcq')
+        const key = event.key;
+        const id = event.target.id;
 
-    const handleOnTypeChange = e => {
-        setQuestionType(e.target.value);
+        const _questions = [...questions];
+
+
+
+        if (key === 'Backspace') {
+
+            let len = _questions[id]?.title?.length;
+
+            _questions[id].title = _questions[id]?.title?.slice(0, len - 1);
+        }
+        else if (key) {
+
+            _questions[id].title = _questions[id]?.title + key;
+
+        }
+        setQuestions(_questions);
+
+
+
     }
 
+    const handleQuestionOptions = ({ questionId, updateOptions }) => {
 
+        const _questions = [...questions];
+
+        _questions[questionId].options = [...updateOptions];
+
+        setQuestions(_questions);
+
+    }
+
+    const handleQuestionAnswer = ({ questionId, updateAnswer }) => {
+
+        const _questions = [...questions];
+
+        _questions[questionId].answer = [...updateAnswer];
+
+        setQuestions(_questions);
+
+
+        console.log("checked: ", _questions);
+
+    }
+
+    const handleQuestionPoint = ({ questionId, updatePoint }) => {
+
+        const _questions = [...questions];
+
+        _questions[questionId].point = parseInt(updatePoint);
+
+        setQuestions(_questions);
+
+    }
+    const handleQuestionType = ({ questionId, updateQuestionType }) => {
+
+        const _questions = [...questions];
+
+        _questions[questionId].questionType = updateQuestionType;
+
+        setQuestions(_questions);
+
+    }
 
 
     const warningToast = (text = 'warning') => {
@@ -77,36 +156,49 @@ const NewTest = () => {
     }
 
 
-    const handleSave = () => {
 
 
-        if (parseInt(question.point) <= 0) {
-            warningToast("Add some points!")
-            return;
-        }
-
-        else if (question.title.length === 0) {
-            warningToast("Add question title")
-            return;
-        }
+    const saveQuestions = () => {
 
 
-        let flag = true;
+        const _questions = [...questions];
 
-        for (let i = 1; i <= 4; i++) {
+        _questions.map((question, serial) => {
 
-            if (question['option' + i].length === 0) {
-                warningToast(`Add text at option ${i}`);
-                flag = false;
+            if (parseInt(question?.point) <= 0) {
+                warningToast("Add some points to the question number ", serial + 1, ' !');
                 return;
             }
-        }
+            else if (question?.title?.length === 0) {
+                warningToast("Add question title to the question number ", serial + 1);
+                return;
+            }
 
-        if (flag && question.answer.length === 0) {
-            warningToast("Select right answer options")
-            return;
-        }
 
+            let len = 0;
+
+            question?.options?.map(a => {
+
+                console.log("text: ", a);
+
+                if (a.length === 0) len++;
+            })
+
+
+            if (len === question?.options?.length) {
+
+                warningToast("Add some options to the question number ", serial + 1);
+                return;
+            }
+
+            if (question?.answer?.length === 0) {
+                warningToast("Select right option/options to the question number ", serial + 1);
+                return;
+            }
+
+
+
+        })
 
 
         const headers = {
@@ -115,19 +207,22 @@ const NewTest = () => {
         };
 
 
-        axios.post('https://hidden-ocean-35645.herokuapp.com/add-question', question, { headers })
+        // axios.post('https://hidden-ocean-35645.herokuapp.com/add-questions', questions, { headers })
+
+
+        axios.post('https://hidden-ocean-35645.herokuapp.com/add-questions', questions, { headers })
             .then(response => {
                 console.log('response: ', response);
 
                 if (response.data.acknowledged) {
 
-                    successToast("Successfully new question added!");
+                    successToast("Successfully new questions added!");
 
                     setTimeout(() => {
                         navigate('/')
 
 
-                    }, 2000);
+                    }, 1000);
 
 
 
@@ -137,24 +232,83 @@ const NewTest = () => {
 
 
 
+
+
     }
 
 
 
 
-    return (
-        <div className='bg-white w-full h-full py-10 '>
 
-            <div className='px-10'>
+
+
+
+
+
+    // Drag and Drop functions start here 
+
+
+    const handleDragStart = index => {
+
+        setDragItemIndex(index)
+
+    };
+
+    const handleDragOver = event => {
+        event.preventDefault();
+    }
+
+    const handleDrop = () => {
+
+
+        const _questions = [...questions];
+
+
+        const moveItem = _questions.splice(dragItemIndex, 1)[0];
+
+
+        _questions.splice(dragOverItemIndex, 0, moveItem);
+
+
+        setQuestions(_questions);
+
+    }
+
+    const handleDragEnter = index => {
+        // if (index)
+        setDragOverItemIndex(index)
+        //  else return;
+
+    }
+
+    const handleDragLeave = (event) => {
+        setDragOverItemIndex(undefined)
+    }
+
+    const handleDragEnd = event => {
+        setDragItemIndex(undefined);
+        setDragOverItemIndex(undefined);
+    }
+
+
+
+
+
+
+
+    return (
+        <div className='  w-full h-full py-10 '>
+
+            <div className='px-10  max-w-[1000px] pb-20'>
 
 
                 <div className='flex justify-between mx-5 items-center border-b-2 border-b-gray-400  py-5'>
 
-                    <h1 className=''>Socratease Quiz</h1>
+                    <h1 className='select-none'>Socratease Quiz</h1>
 
                     <div className='flex items-center'>
                         <FiSettings className='cursor-pointer' />
-                        <div className='flex items-center mx-5 cursor-pointer active:bg-green-200 px-2'>
+                        <div className='flex items-center mx-5 cursor-pointer active:bg-green-200 px-2 select-none'>
                             <HiSaveAs />
                             Save
                         </div>
@@ -163,58 +317,7 @@ const NewTest = () => {
 
 
 
-                        <h1 onClick={handleSave} className='active:bg-green-200 rounded-md uppercase bg-[#4ca667] px-3 py-1 text-sm text-white cursor-pointer'>save & back</h1>
-                    </div>
-
-
-
-
-
-                </div>
-
-
-                <div className='flex flex-col items-start  mx-5 gap-5 border-2 border-gray-200 my-10 px-5  py-5 shadow-md'>
-
-                    <div className='flex justify-between items-center w-full'>
-
-                        <div className='flex items-center gap-2'>
-                            <CgMenuGridO size={25} />
-
-                            <h1>Question </h1>
-                        </div>
-
-                        <div className='flex items-center'>
-
-                            <select onChange={handleOnTypeChange} className='bg-transparent pl-2 pr-5 py-1 border-2 border-gray-200' name="questionType" id="cars">
-                                <option selected value="mcq">MCQ</option>
-                                <option value="shortText">Short Text</option>
-
-                            </select>
-
-                            <AiOutlineQuestionCircle className=' ml-2 text-[#60a5fa]' />
-
-
-                        </div>
-                        <div className='flex gap-2 items-center'>
-                            <label>Point</label>
-
-                            <input onChange={setQuestionPoint} className='bg-transparent w-12 border-2 border-gray-200' type="number" name="point" id="point" />
-
-                        </div>
-
-
-                    </div>
-
-
-                    {/* New question  */}
-                    <div className='w-full'>
-
-                        {
-                            questionType === 'mcq' ? <CreateShortQuestion question={question} setQuestion={setQuestion} /> : <CreateTextQuestion question={question} setQuestion={setQuestion} />
-                        }
-
-
-
+                        <h1 onClick={saveQuestions} className='active:bg-green-200 rounded-md uppercase bg-[#4ca667] px-3 py-1 text-sm text-white cursor-pointer'>save & back</h1>
                     </div>
 
 
@@ -227,6 +330,66 @@ const NewTest = () => {
 
 
 
+
+
+
+                <div className=''>
+
+                    {
+                        questions.map((data, index) =>
+                            <NewQuestion
+
+                                handleDragStart={handleDragStart}
+                                handleDragOver={handleDragOver}
+                                handleDrop={handleDrop}
+                                handleDragEnter={handleDragEnter}
+                                handleDragLeave={handleDragLeave}
+                                handleDragEnd={handleDragEnd}
+
+                                questionSerial={index}
+                                question={data}
+                                key={index}
+
+                                deleteQuestion={deleteQuestion}
+
+                                addQuestionTitle={addQuestionTitle}
+                                handleQuestionOptions={handleQuestionOptions}
+                                handleQuestionAnswer={handleQuestionAnswer}
+                                handleQuestionPoint={handleQuestionPoint}
+                                handleQuestionType={handleQuestionType}
+
+
+
+                            />
+
+
+
+                        )
+
+
+                    }
+
+
+
+
+
+                </div>
+
+
+
+
+                <div className='flex gap-5 justify-center my-10'>
+                    <button onClick={addQuestion} className='bg-[#e5e7eb8d] hover:bg-[#E5E7EB] flex items-center gap-2 px-5 py-2  rounded-md'>
+                        <BsFileEarmarkPlus />
+                        <p className='text-gray-500'>Add Question</p>
+                    </button>
+
+                    <button onClick={saveQuestions} className='bg-[#733cf3] hover:bg-[#8b5cf6] text-white flex items-center gap-2 px-5 py-2 rounded-md select-none'>
+                        <AiOutlineCloudUpload size={25} />
+                        <p>Save Questions </p>
+                    </button>
+
+                </div>
 
 
 
@@ -238,5 +401,36 @@ const NewTest = () => {
         </div>
     );
 };
+
+
+
+
+
+// function NewQuestion({ handleDragStart, handleDragOver, handleDrop, handleDragEnter, handleDragLeave, handleDragEnd, index, question }) {
+
+//     console.log("in fun ", question);
+
+//     return (
+//         <div draggable className='flex gap-5 bg-green-300 my-5'>
+
+
+//             <p
+//                 draggable
+//                 onDragStart={() => handleDragStart(index)}
+//                 onDragOver={handleDragOver}
+//                 onDrop={() => handleDrop(index)}
+//                 onDragEnter={() => handleDragEnter(index)}
+//                 onDragLeave={handleDragLeave}
+//                 onDragEnd={handleDragEnd}
+//                 className="cursor-move py-2 px-5 bg-slate-500 "
+
+//             >=</p>
+//             <h1>{question?.questionID}</h1>
+
+//         </div>
+//     )
+// }
+
+
 
 export default NewTest;

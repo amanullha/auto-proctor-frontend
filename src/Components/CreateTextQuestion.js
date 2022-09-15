@@ -1,112 +1,222 @@
 import React, { useState } from 'react';
+import { CgMenuGridO } from 'react-icons/cg';
+import { ImCross } from 'react-icons/im';
+import { TiDelete } from 'react-icons/ti';
 
-const CreateTextQuestion = ({ question, setQuestion }) => {
+const CreateTextQuestion = ({ question, addQuestionTitle, questionSerial, handleQuestionOptions, handleQuestionAnswer }) => {
 
 
-    const onCgTitle = e => {
+    const [dragItemIndex, setDragItemIndex] = useState();
+    const [dragOverItemIndex, setDragOverItemIndex] = useState();
 
-        const q = question;
-        q.title = e.target.value;
 
-        q.questionType = 'textQuestion';
+    let ln = 0;
+    for (let p of question.options) {
 
-        setQuestion(q);
-        // console.log(question);
+        if (p?.length > 0) ln++;
+    }
+    if (question.options.length === 0 || ln === question.options.length) {
+        question.options.push("")
+    }
+
+
+
+
+
+    const handleOption = (event) => {
+
+        const key = event.key;
+
+
+
+        let id = event.target.id;
+
+        const _options = [...question.options];
+
+        if (key === 'Backspace') {
+
+            let len = _options[id]?.length;
+
+            _options[id] = _options[id].slice(0, len - 1);
+        }
+        else {
+
+            _options[id] = _options[id] + key;
+
+        }
+
+
+        handleQuestionOptions({ questionId: questionSerial, updateOptions: _options })
+
 
     }
 
-    const onCg = e => {
+    const optionDelete = id => {
 
-        const q = question;
+        const _options = question.options.filter((op, i) => i !== id);
 
-        if (e.target.type === 'checkbox' && e.target.checked) {
+        console.log(_options);
 
-            const newAns = [e.target.value][0];
+        handleQuestionOptions({ questionId: questionSerial, updateOptions: _options })
 
-            if (q.answer.indexOf(newAns) === -1) {
-                q.answer.push(newAns);
-            }
-
-        }
-        else if (e.target.type === 'checkbox' && e.target.checked === false) {
-
-            const newAns = [e.target.value][0];
-
-            const newAnsArray = q.answer.filter(f => f !== newAns);
+    }
 
 
-            q.answer = [...newAnsArray];
+
+
+
+
+
+
+
+
+    // Drag and Drop functions start here 
+
+
+    const handleDragStart = index => {
+        setDragItemIndex(index)
+
+    };
+
+    const handleDragOver = event => {
+        event.preventDefault();
+    }
+
+    const handleDrop = () => {
+
+        let _options = [...question.options];
+
+        const moveItem = _options.splice(dragItemIndex, 1)[0];
+
+        _options.splice(dragOverItemIndex, 0, moveItem);
+
+        handleQuestionOptions({ questionId: questionSerial, updateOptions: _options })
+
+    }
+
+
+
+
+
+
+
+
+
+
+    const handleDragEnter = index => {
+        //if (index)
+        setDragOverItemIndex(index)
+        //   else return;
+
+    }
+
+    const handleDragLeave = (event) => {
+        setDragOverItemIndex(undefined)
+    }
+
+    const handleDragEnd = event => {
+        setDragItemIndex(undefined);
+        setDragOverItemIndex(undefined);
+    }
+
+
+
+    const updateQuestionAnswer = ({ e, questionId, updateAnswerOption }) => {
+
+        console.log("up: ", questionId);
+        console.log("up: ", e.target.value);
+
+        const val = parseInt(e.target.value);
+
+        if (e.target.checked) {
+
+            const _ans = [...question.answer];
+
+            if (_ans.indexOf(val) === -1) _ans.push(val);
+
+            handleQuestionAnswer({ questionId: questionId, updateAnswer: _ans })
+
 
         }
         else {
-            q[e.target.name] = e.target.value;
+
+            const _ans = [...question.answer];
+
+            const newAns = _ans.filter(a => a !== val);
+
+            handleQuestionAnswer({ questionId: questionId, updateAnswer: newAns })
+
         }
 
-        setQuestion(q);
-        console.log(question.answer);
+
+
+
+
+
     }
-
-
-
 
 
 
     return (
         <div className='w-full'>
 
-            <div className="w-full">
-
-                <input onChange={onCgTitle} className='py-1 bg-transparent border-2 border-gray-200 w-full px-2' placeholder='Question Text' type="text" name="question" id="" />
-
-            </div>
 
 
-            <div>
-
-                <form onChange={onCg} className='py-5 flex flex-col gap-5'>
-
-                    <div className=' flex items-center gap-2' id="1">
-
-                        <input type="checkbox" id="question" name="ans" value="1" className='w-4 h-4' />
-                        {/* <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike"> */}
-
-                        <input className='bg-transparent border-2 border-gray-200 px-2 ' type="text" name="option1" id="" placeholder="Option 1" />
-
-                        {/* <button className='cursor-pointer active:font-bold'>X</button> */}
-                    </div>
 
 
-                    <div className=' flex items-center gap-2' id="2">
-                        <input type="checkbox" id="question" name="ans" value="2" className='w-4 h-4' />
-                        <input className='bg-transparent border-2 border-gray-200 px-2 ' type="text" name="option2" id="" placeholder="Option 2" />
 
-                        {/* <button className='cursor-pointer active:font-bold'>X</button> */}
-                    </div>
+            <form className='py-5 flex flex-col gap-5'>
 
+                {
+                    question.options.map((option, index) =>
 
-                    <div className=' flex items-center gap-2' id="3">
-                        <input type="checkbox" id="question" name="ans" value="3" className='w-4 h-4' />
-                        <input className='bg-transparent border-2 border-gray-200 px-2 ' type="text" name="option3" id="" placeholder="Option 3" />
+                        <div
+                            // onDragOver={handleDragOver}
+                            // onDrop={() => handleDrop(index)}
+                            // onDragEnter={() => handleDragEnter(index)}
 
-                        {/* <button className='cursor-pointer active:font-bold'>X</button> */}
-                    </div>
+                            key={index}
 
-
-                    <div className=' flex items-center gap-2' id="4">
-                        <input type="checkbox" id="question" name="ans" value="4" className='w-4 h-4' />
-                        <input className='bg-transparent border-2 border-gray-200 px-2 ' type="text" name="option4" id="" placeholder="Option 4" />
-
-                        {/* <button className='cursor-pointer active:font-bold'>X</button> */}
-                    </div>
+                            className=' flex items-center gap-2' id="1">
 
 
-                </form>
+                            <div
+                                draggable
+                                onDragStart={() => handleDragStart(index)}
+                                onDragOver={handleDragOver}
+                                onDrop={() => handleDrop(index)}
+                                onDragEnter={() => handleDragEnter(index)}
+                                onDragLeave={handleDragLeave}
+                                onDragEnd={handleDragEnd}
+                                className="cursor-move  "
 
-            </div>
+                            >
+                                <CgMenuGridO
+
+
+                                    size={15} />
+
+                            </div>
+
+
+                            <input onClick={(e) => updateQuestionAnswer({ e, questionId: questionSerial, updateAnswer: [index] })} type="checkbox" id="question" name="ans" value={index} className='w-5 h-5' />
+
+                            <input onKeyUp={handleOption} className='bg-transparent border-2 border-gray-200 px-2 ' type="text" name="option" id={index} placeholder={`Option ${index + 1}`} value={option} />
+
+                            <ImCross onClick={() => optionDelete(index)} className='cursor-pointer active:font-bold ' />
+                        </div>)
+                }
+
+
+
+
+
+            </form>
+
+
 
         </div>
     );
 };
-
 
 export default CreateTextQuestion;
