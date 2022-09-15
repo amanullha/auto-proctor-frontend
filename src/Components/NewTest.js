@@ -161,16 +161,21 @@ const NewTest = () => {
     const saveQuestions = () => {
 
 
+        let flag = true;
+
         const _questions = [...questions];
 
         _questions.map((question, serial) => {
 
+
             if (parseInt(question?.point) <= 0) {
                 warningToast("Add some points to the question number ", serial + 1, ' !');
+                flag = false;
                 return;
             }
             else if (question?.title?.length === 0) {
                 warningToast("Add question title to the question number ", serial + 1);
+                flag = false;
                 return;
             }
 
@@ -188,11 +193,13 @@ const NewTest = () => {
             if (len === question?.options?.length) {
 
                 warningToast("Add some options to the question number ", serial + 1);
+                flag = false;
                 return;
             }
 
             if (question?.answer?.length === 0) {
                 warningToast("Select right option/options to the question number ", serial + 1);
+                flag = false;
                 return;
             }
 
@@ -209,28 +216,28 @@ const NewTest = () => {
 
         // axios.post('https://hidden-ocean-35645.herokuapp.com/add-questions', questions, { headers })
 
+        if (flag) {
+            axios.post('https://hidden-ocean-35645.herokuapp.com/add-questions', questions, { headers })
+                .then(response => {
+                    console.log('response: ', response);
 
-        axios.post('https://hidden-ocean-35645.herokuapp.com/add-questions', questions, { headers })
-            .then(response => {
-                console.log('response: ', response);
+                    if (response.data.acknowledged) {
 
-                if (response.data.acknowledged) {
+                        successToast("Successfully new questions added!");
 
-                    successToast("Successfully new questions added!");
-
-                    setTimeout(() => {
-                        navigate('/')
-
-
-                    }, 1000);
+                        setTimeout(() => {
+                            navigate('/')
 
 
-
-                }
-            });
+                        }, 1000);
 
 
 
+                    }
+                });
+
+
+        }
 
 
 
